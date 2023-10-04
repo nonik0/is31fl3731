@@ -10,10 +10,8 @@ repository = "https://github.com/gleich/is31fl3731"
 readme = "README.md"
 
 [dependencies]
-embedded-hal = "0.2.6"
-
-[dev-dependencies]
-rppal = {version = "0.13.1", features = ["hal"]}
+embedded-hal = "0.2.7"
+embedded-hal-async = { version = "1.0.0-rc.1", optional = true }
 
 [features]
 charlie_bonnet = []
@@ -23,6 +21,8 @@ led_shim = []
 matrix = []
 rgb_matrix_5x5 = []
 scroll_phat_hd = []
+
+async = ["dep:embedded-hal-async"]
 
 [[example]]
 name = "rpi"
