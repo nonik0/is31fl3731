@@ -201,6 +201,7 @@ where
     }
 }
 
+#[cfg(feature = "async")]
 impl<I2C, I2cError> IS31FL3731<I2C>
 where
     I2C: embedded_hal_async::i2c::I2c<Error = I2cError>,
