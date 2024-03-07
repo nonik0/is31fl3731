@@ -71,10 +71,7 @@ impl CharlieWing {
 }
 
 #[cfg(feature = "keybow_2040")]
-impl<I2C, I2cError> Keybow2040<I2C>
-where
-    I2C: Write<Error = I2cError>,
-{
+impl<I2C> Keybow2040<I2C> {
     pub fn configure(i2c: I2C) -> Self {
         Self {
             device: IS31FL3731 {
@@ -107,21 +104,52 @@ where
             },
         }
     }
+}
 
-    pub fn pixel_rgb(&mut self, x: u8, y: u8, r: u8, g: u8, b: u8) -> Result<(), Error<I2cError>> {
+#[cfg(feature = "keybow_2040")]
+impl<I2C, I2cError> Keybow2040<I2C>
+where
+    I2C: Write<Error = I2cError>,
+{
+    pub fn pixel_rgb_blocking(
+        &mut self,
+        x: u8,
+        y: u8,
+        r: u8,
+        g: u8,
+        b: u8,
+    ) -> Result<(), Error<I2cError>> {
         let x = (4 * (3 - x)) + y;
-        self.device.pixel(x, 0, r)?;
-        self.device.pixel(x, 1, g)?;
-        self.device.pixel(x, 2, b)?;
+        self.device.pixel_blocking(x, 0, r)?;
+        self.device.pixel_blocking(x, 1, g)?;
+        self.device.pixel_blocking(x, 2, b)?;
+        Ok(())
+    }
+}
+
+#[cfg(all(feature = "keybow_2040", feature = "async"))]
+impl<I2C, I2cError> Keybow2040<I2C>
+where
+    I2C: embedded_hal_async::i2c::I2c<Error = I2cError>,
+{
+    pub async fn pixel_rgb(
+        &mut self,
+        x: u8,
+        y: u8,
+        r: u8,
+        g: u8,
+        b: u8,
+    ) -> Result<(), Error<I2cError>> {
+        let x = (4 * (3 - x)) + y;
+        self.device.pixel(x, 0, r).await?;
+        self.device.pixel(x, 1, g).await?;
+        self.device.pixel(x, 2, b).await?;
         Ok(())
     }
 }
 
 #[cfg(feature = "led_shim")]
-impl<I2C, I2cError> LEDShim<I2C>
-where
-    I2C: Write<Error = I2cError>,
-{
+impl<I2C> LEDShim<I2C> {
     pub fn configure(i2c: I2C) -> Self {
         Self {
             device: IS31FL3731 {
@@ -207,10 +235,36 @@ where
             },
         }
     }
-    pub fn pixel_rgb(&mut self, x: u8, r: u8, g: u8, b: u8) -> Result<(), Error<I2cError>> {
-        self.device.pixel(x, 0, r)?;
-        self.device.pixel(x, 1, g)?;
-        self.device.pixel(x, 2, b)?;
+}
+
+#[cfg(feature = "led_shim")]
+impl<I2C, I2cError> LEDShim<I2C>
+where
+    I2C: Write<Error = I2cError>,
+{
+    pub fn pixel_rgb_blocking(
+        &mut self,
+        x: u8,
+        r: u8,
+        g: u8,
+        b: u8,
+    ) -> Result<(), Error<I2cError>> {
+        self.device.pixel_blocking(x, 0, r)?;
+        self.device.pixel_blocking(x, 1, g)?;
+        self.device.pixel_blocking(x, 2, b)?;
+        Ok(())
+    }
+}
+
+#[cfg(all(feature = "led_shim", feature = "async"))]
+impl<I2C, I2cError> LEDShim<I2C>
+where
+    I2C: embedded_hal_async::i2c::I2c<Error = I2cError>,
+{
+    pub async fn pixel_rgb(&mut self, x: u8, r: u8, g: u8, b: u8) -> Result<(), Error<I2cError>> {
+        self.device.pixel(x, 0, r).await?;
+        self.device.pixel(x, 1, g).await?;
+        self.device.pixel(x, 2, b).await?;
         Ok(())
     }
 }
@@ -230,10 +284,7 @@ impl Matrix {
 }
 
 #[cfg(feature = "rgb_matrix_5x5")]
-impl<I2C, I2cError> RGBMatrix5x5<I2C>
-where
-    I2C: Write<Error = I2cError>,
-{
+impl<I2C> RGBMatrix5x5<I2C> {
     pub fn configure(i2c: I2C) -> Self {
         Self {
             device: IS31FL3731 {
@@ -275,12 +326,46 @@ where
             },
         }
     }
+}
 
-    pub fn pixel_rgb(&mut self, x: u8, y: u8, r: u8, g: u8, b: u8) -> Result<(), Error<I2cError>> {
+#[cfg(feature = "rgb_matrix_5x5")]
+impl<I2C, I2cError> RGBMatrix5x5<I2C>
+where
+    I2C: Write<Error = I2cError>,
+{
+    pub fn pixel_rgb_blocking(
+        &mut self,
+        x: u8,
+        y: u8,
+        r: u8,
+        g: u8,
+        b: u8,
+    ) -> Result<(), Error<I2cError>> {
         let x = x + y * 5;
-        self.device.pixel(x, 0, r)?;
-        self.device.pixel(x, 1, g)?;
-        self.device.pixel(x, 2, b)?;
+        self.device.pixel_blocking(x, 0, r)?;
+        self.device.pixel_blocking(x, 1, g)?;
+        self.device.pixel_blocking(x, 2, b)?;
+        Ok(())
+    }
+}
+
+#[cfg(all(feature = "rgb_matrix_5x5", feature = "async"))]
+impl<I2C, I2cError> RGBMatrix5x5<I2C>
+where
+    I2C: embedded_hal_async::i2c::I2c<Error = I2cError>,
+{
+    pub async fn pixel_rgb(
+        &mut self,
+        x: u8,
+        y: u8,
+        r: u8,
+        g: u8,
+        b: u8,
+    ) -> Result<(), Error<I2cError>> {
+        let x = x + y * 5;
+        self.device.pixel(x, 0, r).await?;
+        self.device.pixel(x, 1, g).await?;
+        self.device.pixel(x, 2, b).await?;
         Ok(())
     }
 }
