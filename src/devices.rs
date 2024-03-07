@@ -124,7 +124,7 @@ where
     }
 }
 
-#[cfg(feature = "keybow_2040")]
+#[cfg(all(feature = "keybow_2040", feature = "async"))]
 impl<I2C, I2cError> Keybow2040<I2C>
 where
     I2C: embedded_hal_async::i2c::I2c<Error = I2cError>,
@@ -249,7 +249,7 @@ where
     }
 }
 
-#[cfg(feature = "led_shim")]
+#[cfg(all(feature = "led_shim", feature = "async"))]
 impl<I2C, I2cError> LEDShim<I2C>
 where
     I2C: embedded_hal_async::i2c::I2c<Error = I2cError>,
@@ -345,7 +345,7 @@ where
     }
 }
 
-#[cfg(feature = "rgb_matrix_5x5")]
+#[cfg(all(feature = "rgb_matrix_5x5", feature = "async"))]
 impl<I2C, I2cError> RGBMatrix5x5<I2C>
 where
     I2C: embedded_hal_async::i2c::I2c<Error = I2cError>,
