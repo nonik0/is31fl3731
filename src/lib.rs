@@ -14,32 +14,16 @@ pub struct IS31FL3731<I2C> {
     pub i2c: I2C,
     /// The 7-bit i2c slave address of the device. By default on most devices this is `0x74`.
     pub address: u8,
-    /// Width of the LED matrix
-    pub width: u8,
-    /// Height of the LED matrix
-    pub height: u8,
-    /// Method to convert an x,y coordinate pair to a binary address that can be accessed using the
-    /// bus
-    pub calc_pixel: fn(x: u8, y: u8) -> u8,
     /// The current frame register in use.
     frame: u8,
 }
 
 impl<I2C> IS31FL3731<I2C> {
     /// Creates and sets up a new instance of the IS31FL3731 driver.
-    pub fn new(
-        i2c: I2C,
-        address: u8,
-        width: u8,
-        height: u8,
-        calc_pixel: fn(x: u8, y: u8) -> u8,
-    ) -> Self {
+    pub fn new(i2c: I2C, address: u8) -> Self {
         Self {
             i2c,
             address,
-            width,
-            height,
-            calc_pixel,
             frame: 0,
         }
     }
@@ -109,18 +93,14 @@ where
         Ok(())
     }
 
-    /// Set the brightness at a specific x,y coordinate. Just like the [fill method](Self::fill)
-    /// the brightness should range from 0 to 255. If the coordinate is out of range then the
-    /// function will return an error of [InvalidLocation](Error::InvalidLocation).
-    pub fn pixel_blocking(&mut self, x: u8, y: u8, brightness: u8) -> Result<(), Error<I2cError>> {
-        if x > self.width {
-            return Err(Error::InvalidLocation(x));
+    /// Set the brightness for a specific LED. Just like the [fill method](Self::fill) the
+    /// brightness should range from 0 to 255. If the LED is out of range then the function will
+    /// return an error of [InvalidLocation](Error::InvalidLocation).
+    pub fn pixel_blocking(&mut self, led: u8, brightness: u8) -> Result<(), Error<I2cError>> {
+        if led >= 144 {
+            return Err(Error::InvalidLocation(led));
         }
-        if y > self.height {
-            return Err(Error::InvalidLocation(y));
-        }
-        let pixel = (self.calc_pixel)(x, y);
-        self.write_register_blocking(self.frame, addresses::COLOR_OFFSET + pixel, brightness)?;
+        self.write_register_blocking(self.frame, addresses::COLOR_OFFSET + led, brightness)?;
         Ok(())
     }
 
@@ -262,18 +242,14 @@ where
         Ok(())
     }
 
-    /// Set the brightness at a specific x,y coordinate. Just like the [fill method](Self::fill)
-    /// the brightness should range from 0 to 255. If the coordinate is out of range then the
-    /// function will return an error of [InvalidLocation](Error::InvalidLocation).
-    pub async fn pixel(&mut self, x: u8, y: u8, brightness: u8) -> Result<(), Error<I2cError>> {
-        if x > self.width {
-            return Err(Error::InvalidLocation(x));
+    /// Set the brightness for a specific LED. Just like the [fill method](Self::fill) the
+    /// brightness should range from 0 to 255. If the LED is out of range then the function will
+    /// return an error of [InvalidLocation](Error::InvalidLocation).
+    pub async fn pixel(&mut self, led: u8, brightness: u8) -> Result<(), Error<I2cError>> {
+        if led >= 144 {
+            return Err(Error::InvalidLocation(led));
         }
-        if y > self.height {
-            return Err(Error::InvalidLocation(y));
-        }
-        let pixel = (self.calc_pixel)(x, y);
-        self.write_register(self.frame, addresses::COLOR_OFFSET + pixel, brightness)
+        self.write_register(self.frame, addresses::COLOR_OFFSET + led, brightness)
             .await?;
         Ok(())
     }
