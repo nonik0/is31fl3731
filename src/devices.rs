@@ -1,9 +1,9 @@
 #[allow(unused_imports)]
 use crate::{Error, IS31FL3731};
 #[allow(unused_imports)]
-use embedded_hal::blocking::delay::DelayMs;
+use embedded_hal::delay::DelayNs;
 #[allow(unused_imports)]
-use embedded_hal::blocking::i2c::Write;
+use embedded_hal::i2c::I2c;
 
 #[cfg(feature = "charlie_bonnet")]
 pub struct CharlieBonnet<I2C> {
@@ -37,7 +37,7 @@ pub struct ScrollPhatHD<I2C> {
 #[cfg(feature = "charlie_bonnet")]
 impl<I2C, I2cError> CharlieBonnet<I2C>
 where
-    I2C: Write<Error = I2cError>,
+    I2C: I2c<Error = I2cError>,
 {
     pub fn configure(i2c: I2C) -> IS31FL3731<I2C> {
         IS31FL3731 {
@@ -65,7 +65,7 @@ where
 #[cfg(feature = "charlie_wing")]
 impl<I2C, I2cError> CharlieWing<I2C>
 where
-    I2C: Write<Error = I2cError>,
+    I2C: I2c<Error = I2cError>,
 {
     pub fn configure(i2c: I2C) -> IS31FL3731<I2C> {
         IS31FL3731 {
@@ -138,7 +138,7 @@ impl<I2C> Keybow2040<I2C> {
 #[cfg(feature = "keybow_2040")]
 impl<I2C, I2cError> Keybow2040<I2C>
 where
-    I2C: Write<Error = I2cError>,
+    I2C: I2c<Error = I2cError>,
 {
     pub fn pixel_rgb_blocking(
         &mut self,
@@ -274,7 +274,7 @@ impl<I2C> LEDShim<I2C> {
 #[cfg(feature = "led_shim")]
 impl<I2C, I2cError> LEDShim<I2C>
 where
-    I2C: Write<Error = I2cError>,
+    I2C: I2c<Error = I2cError>,
 {
     pub fn pixel_rgb_blocking(
         &mut self,
@@ -306,7 +306,7 @@ where
 #[cfg(feature = "matrix")]
 impl<I2C, I2cError> Matrix<I2C>
 where
-    I2C: Write<Error = I2cError>,
+    I2C: I2c<Error = I2cError>,
 {
     pub fn configure(i2c: I2C) -> Self {
         Self {
@@ -382,7 +382,7 @@ impl<I2C> RGBMatrix5x5<I2C> {
 #[cfg(feature = "rgb_matrix_5x5")]
 impl<I2C, I2cError> RGBMatrix5x5<I2C>
 where
-    I2C: Write<Error = I2cError>,
+    I2C: I2c<Error = I2cError>,
 {
     pub fn pixel_rgb_blocking(
         &mut self,
@@ -424,7 +424,7 @@ where
 #[cfg(feature = "scroll_phat_hd")]
 impl<I2C, I2cError> ScrollPhatHD<I2C>
 where
-    I2C: Write<Error = I2cError>,
+    I2C: I2c<Error = I2cError>,
 {
     pub fn configure(i2c: I2C) -> Self {
         Self {
