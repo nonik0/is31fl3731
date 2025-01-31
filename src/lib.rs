@@ -65,6 +65,12 @@ where
         Ok(())
     }
 
+    /// Clear the display. This is a convenience method that calls [fill](Self::fill) with a
+    /// brightness of 0 for the current frame.
+    pub fn clear_blocking(&mut self) -> Result<(), I2cError> {
+        self.fill_blocking(0, None, self.frame)
+    }
+
     /// Setup the display. Should be called before interacting with the device to ensure proper
     /// functionality. Delay is something that your device's HAL should provide which allows for
     /// the process to sleep for a certain amount of time (in this case 10 MS to perform a reset).
@@ -74,10 +80,7 @@ where
     /// 2. All frames will be cleared.
     /// 3. Audio syncing will be turned off.
     /// 4. The chip will be told that it's being turned back on.
-    pub fn setup_blocking(
-        &mut self,
-        delay: &mut impl DelayNs,
-    ) -> Result<(), Error<I2cError>> {
+    pub fn setup_blocking(&mut self, delay: &mut impl DelayNs) -> Result<(), Error<I2cError>> {
         self.sleep_blocking(true)?;
         delay.delay_ms(10);
         self.mode_blocking(addresses::PICTURE_MODE)?;
@@ -97,7 +100,7 @@ where
     /// brightness should range from 0 to 255. If the LED is out of range then the function will
     /// return an error of [InvalidLocation](Error::InvalidLocation).
     pub fn pixel_blocking(&mut self, led: u8, brightness: u8) -> Result<(), Error<I2cError>> {
-        if led >= 144 {
+        if led >= LED_COUNT as u8 {
             return Err(Error::InvalidLocation(led));
         }
         self.write_register_blocking(self.frame, addresses::COLOR_OFFSET + led, brightness)?;
@@ -105,7 +108,7 @@ where
     }
 
     /// Individially assign and updated brightness values for all 144 LEDs at once.
-    pub fn all_pixels_blocking(&mut self, buf: &[u8; 144]) -> Result<(), Error<I2cError>> {
+    pub fn all_pixels_blocking(&mut self, buf: &[u8; LED_COUNT]) -> Result<(), Error<I2cError>> {
         self.bank_blocking(self.frame)?;
         let mut payload = [0; 145];
         payload[0] = addresses::COLOR_OFFSET;
@@ -213,6 +216,13 @@ where
         Ok(())
     }
 
+    /// Clear the display. This is a convenience method that calls [fill](Self::fill) with a
+    /// brightness of 0 for the current frame.
+    pub async fn clear(&mut self) -> Result<(), I2cError> {
+        self.fill(0, None, self.frame).await?;
+    }
+
+
     /// Setup the display. Should be called before interacting with the device to ensure proper
     /// functionality. Delay is something that your device's HAL should provide which allows for
     /// the process to sleep for a certain amount of time (in this case 10 MS to perform a reset).
@@ -222,10 +232,7 @@ where
     /// 2. All frames will be cleared.
     /// 3. Audio syncing will be turned off.
     /// 4. The chip will be told that it's being turned back on.
-    pub async fn setup(
-        &mut self,
-        delay: &mut impl DelayNs,
-    ) -> Result<(), Error<I2cError>> {
+    pub async fn setup(&mut self, delay: &mut impl DelayNs) -> Result<(), Error<I2cError>> {
         self.sleep(true).await?;
         delay.delay_ms(10);
         self.mode(addresses::PICTURE_MODE).await?;
@@ -246,7 +253,7 @@ where
     /// brightness should range from 0 to 255. If the LED is out of range then the function will
     /// return an error of [InvalidLocation](Error::InvalidLocation).
     pub async fn pixel(&mut self, led: u8, brightness: u8) -> Result<(), Error<I2cError>> {
-        if led >= 144 {
+        if led >= LED_COUNT as u8 {
             return Err(Error::InvalidLocation(led));
         }
         self.write_register(self.frame, addresses::COLOR_OFFSET + led, brightness)
@@ -255,7 +262,7 @@ where
     }
 
     /// Individially assign and updated brightness values for all 144 LEDs at once.
-    pub async fn all_pixels(&mut self, buf: &[u8; 144]) -> Result<(), Error<I2cError>> {
+    pub async fn all_pixels(&mut self, buf: &[u8; LED_COUNT]) -> Result<(), Error<I2cError>> {
         self.bank(self.frame).await?;
         let mut payload = [0; 145];
         payload[0] = addresses::COLOR_OFFSET;
@@ -348,6 +355,9 @@ const GAMMA_TABLE: [u8; 256] = [
 pub fn gamma(val: u8) -> u8 {
     GAMMA_TABLE[val as usize]
 }
+
+pub const DEFAULT_ADDRESS: u8 = 0x74;
+pub const LED_COUNT: usize = 144;
 
 /// See the [data sheet](https://www.lumissil.com/assets/pdf/core/IS31FL3731_DS.pdf)
 /// for more information on registers.
